@@ -4,6 +4,25 @@ import torch.nn.functional as F
 from torch.nn import init
 
 
+class Recurrent_block(nn.Module):
+    def __init__(self, ch_out, t=2):
+        super(Recurrent_block, self).__init__()
+        self.t = t
+        self.ch_out = ch_out
+        self.conv = nn.Sequential(
+            nn.Conv2d(ch_out, ch_out, kernel_size=3, stride=1, padding=1, bias=True),
+            nn.GroupNorm(32, ch_out),
+            nn.ReLU(inplace=True)
+        )
+
+    def forward(self, x):
+        for i in range(self.t):
+            if i == 0:
+                x1 = self.conv(x)
+            else:
+                x1 = self.conv(x + x1)
+        return x1
+
 class conv_block(nn.Module):
     def __init__(self, ch_in, ch_out):
         super(conv_block, self).__init__()
@@ -57,6 +76,7 @@ class up_conv(nn.Module):
         return x
 
 
+class RRCNN_block(nn.Module):
     def __init__(self, ch_in, ch_out, t=2):
         super(RRCNN_block, self).__init__()
         self.RCNN = nn.Sequential(
@@ -84,6 +104,7 @@ class single_conv(nn.Module):
         x = self.conv(x)
         return x
 
+class Attention_block(nn.Module):
     def __init__(self, F_g, F_l, F_int):
         super(Attention_block, self).__init__()
         self.W_g = nn.Sequential(
